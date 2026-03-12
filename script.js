@@ -332,14 +332,14 @@ window.cancelarEliminar = () => {
 
 window.enviarWhatsApp = function() {
     if (!carrito.length) return;
-    let msj = "Hola Carlo Xavi! Deseo adquirir las siguientes piezas:%0A%0A";
+    let msj = "Hola! Deseo adquirir las siguientes piezas:%0A%0A";
     let total = 0;
     carrito.forEach(p => {
         msj += `*• ${p.nombre}* (x${p.cantidad}) - $${(p.precio * p.cantidad).toLocaleString('es-AR')}%0A`;
         total += p.precio * p.cantidad;
     });
     msj += `%0A*TOTAL: $${total.toLocaleString('es-AR')}*%0A%0AAtentamente.`;
-    window.open(`https://wa.me/5493735538773?text=${msj}`);
+    window.open(`https://wa.me/5493624895445?text=${msj}`);
     
     // Limpieza post-venta
     carrito = [];
