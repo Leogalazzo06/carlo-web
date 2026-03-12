@@ -108,14 +108,16 @@
 
         <!-- FONDO con parallax -->
         <div class="absolute inset-0 z-0">
-            <img
-                src="https://res.cloudinary.com/dl2tftoum/image/upload/v1773300124/uaqutu92sebyckoensgn.webp"
-                class="w-full h-[115%] object-cover object-center absolute top-0 will-change-transform"
-                id="hero-img" alt="Carlo Essential Hero">
-            <div class="absolute inset-0 bg-gradient-to-b from-[#050505]/75 via-[#050505]/20 to-[#050505] z-10"></div>
-            <div class="absolute inset-0 bg-gradient-to-r from-[#050505]/50 via-transparent to-[#050505]/50 z-10"></div>
-            <div class="absolute inset-0 z-10" style="box-shadow: inset 0 0 160px rgba(0,0,0,0.8);"></div>
-        </div>
+    <img
+        src="https://res.cloudinary.com/dl2tftoum/image/upload/v1773300124/uaqutu92sebyckoensgn.webp"
+        class="w-full h-[115%] object-cover object-center absolute top-0 will-change-transform blur-[2px] scale-105"
+        id="hero-img" 
+        alt="Carlo Essential Hero">
+
+    <div class="absolute inset-0 bg-gradient-to-b from-[#050505]/75 via-[#050505]/20 to-[#050505] z-10"></div>
+    <div class="absolute inset-0 bg-gradient-to-r from-[#050505]/50 via-transparent to-[#050505]/50 z-10"></div>
+    <div class="absolute inset-0 z-10" style="box-shadow: inset 0 0 160px rgba(0,0,0,0.8);"></div>
+</div>
 
         <!-- Líneas laterales — solo desktop -->
         <div class="absolute left-10 top-0 h-full z-20 pointer-events-none hidden lg:flex">
@@ -144,24 +146,32 @@
                 Relojes &amp; Accesorios
             </p>
 
-            <div class="hero-reveal flex flex-col sm:flex-row items-center justify-center gap-3" style="animation-delay:0.6s">
+            <!-- Botón principal -->
+            <div class="hero-reveal flex items-center justify-center mb-6" style="animation-delay:0.6s">
                 <a href="#productos" class="group relative inline-flex items-center gap-2 bg-[#d4af37] text-black px-8 py-3.5 rounded-full font-black uppercase tracking-widest text-[10px] overflow-hidden transition-all duration-500 hover:shadow-[0_0_35px_rgba(212,175,55,0.45)] hover:scale-[1.02] w-full sm:w-auto justify-center">
                     <span class="relative z-10">Explorar Colección</span>
                     <i class="fa-solid fa-arrow-right relative z-10 text-[9px] transition-transform duration-300 group-hover:translate-x-1"></i>
                     <div class="absolute inset-0 bg-white translate-x-[-110%] group-hover:translate-x-0 transition-transform duration-500 ease-in-out"></div>
                 </a>
-                <a href="#productos" class="inline-flex items-center gap-2 border border-white/15 text-white/65 px-8 py-3.5 rounded-full font-bold uppercase tracking-widest text-[10px] hover:border-[#d4af37]/50 hover:text-white transition-all duration-500 w-full sm:w-auto justify-center">
-                    <i class="fa-solid fa-gem text-[#d4af37] text-[9px]"></i>
-                    Ver Piezas
+            </div>
+
+            <!-- Redes sociales -->
+            <div class="hero-reveal flex items-center justify-center gap-4" style="animation-delay:0.75s">
+                <div class="h-px w-6 bg-white/15"></div>
+                <a href="https://wa.me/TUNUMERO" target="_blank" rel="noopener"
+                   class="flex items-center justify-center w-9 h-9 rounded-full border border-white/15 text-white/50 hover:border-[#25D366] hover:text-[#25D366] transition-all duration-300 hover:scale-110 hover:shadow-[0_0_14px_rgba(37,211,102,0.3)]">
+                    <i class="fa-brands fa-whatsapp text-sm"></i>
                 </a>
+                <a href="https://instagram.com/TUPERFIL" target="_blank" rel="noopener"
+                   class="flex items-center justify-center w-9 h-9 rounded-full border border-white/15 text-white/50 hover:border-[#E1306C] hover:text-[#E1306C] transition-all duration-300 hover:scale-110 hover:shadow-[0_0_14px_rgba(225,48,108,0.3)]">
+                    <i class="fa-brands fa-instagram text-sm"></i>
+                </a>
+                <div class="h-px w-6 bg-white/15"></div>
             </div>
         </div>
 
-        <!-- Scroll indicator -->
-        <div class="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 flex flex-col items-center gap-2 hero-reveal" style="animation-delay:0.9s">
-            <span class="text-[7px] uppercase tracking-[0.4em] text-gray-600">Scroll</span>
-            <div class="w-px h-8 bg-gradient-to-b from-gray-500 to-transparent animate-[scrollLine_2s_ease-in-out_infinite]"></div>
-        </div>
+        <!-- Scroll indicator — centrado en mobile y desktop -->
+        
     </header>
 
     <style>
