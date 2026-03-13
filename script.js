@@ -543,10 +543,24 @@ window.addEventListener('DOMContentLoaded', () => {
     const productId = params.get('p');
 
     if (productId) {
+        // Mostrar loader inmediatamente
+        const loader = document.getElementById('deeplink-loader');
+        loader.classList.remove('hidden');
+        loader.style.display = 'flex';
+
         const checkProducts = setInterval(() => {
             if (productos.length > 0) {
-                verDetalles(productId);
                 clearInterval(checkProducts);
+                verDetalles(productId);
+                // Ocultar loader con fade
+                loader.style.transition = 'opacity 0.4s ease';
+                loader.style.opacity = '0';
+                setTimeout(() => {
+                    loader.style.display = 'none';
+                    loader.classList.add('hidden');
+                    loader.style.opacity = '';
+                    loader.style.transition = '';
+                }, 400);
                 window.history.replaceState({}, document.title, window.location.pathname);
             }
         }, 100);
