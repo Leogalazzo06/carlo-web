@@ -249,7 +249,6 @@ window.verDetalles = function(id) {
                 <img id="main-img" src="${p.imagenes[0]}" class="w-full object-cover cursor-zoom-in" style="height: 42vh; max-height: 320px;" onclick="abrirLightbox(0)">
                 ${badges}
                 ${thumbnails}
-                <!-- Botón ampliar -->
                 <button onclick="abrirLightbox(0)" class="absolute bottom-4 right-4 w-8 h-8 flex items-center justify-center bg-black/50 backdrop-blur-sm rounded-full border border-white/20 text-white/70 hover:text-white hover:bg-black/70 transition-all z-10">
                     <i class="fa-solid fa-expand text-xs"></i>
                 </button>
@@ -284,7 +283,6 @@ window.verDetalles = function(id) {
                         class="absolute top-5 right-5 z-50 w-9 h-9 flex items-center justify-center bg-black/40 backdrop-blur-sm rounded-full text-white/60 hover:text-white hover:bg-black/70 transition-all">
                     <i class="fa-solid fa-xmark"></i>
                 </button>
-                <!-- Botón ampliar -->
                 <button onclick="abrirLightbox(0)" class="absolute bottom-5 right-5 z-50 w-9 h-9 flex items-center justify-center bg-black/40 backdrop-blur-sm rounded-full border border-white/20 text-white/70 hover:text-white hover:bg-black/70 transition-all">
                     <i class="fa-solid fa-expand text-xs"></i>
                 </button>
@@ -316,15 +314,12 @@ window.cambiarImagenDetalle = (src) => {
 };
 
 // --- CARRITO (CARLO-WEB) ---
-// varianteNombre y variantePrecio son opcionales (solo para productos con variantes)
 window.agregarCarrito = function(id, varianteNombre, variantePrecio) {
     const prod = productos.find(p => p.id === id);
     if (!prod || prod.disponible === false) return showToast("Pieza no disponible");
 
-    // Precio efectivo: si hay variante seleccionada usa ese precio, si no usa el precio base
     const precioFinal  = variantePrecio  ? Number(variantePrecio)  : prod.precio;
     const nombreFinal  = varianteNombre  ? `${prod.nombre} — ${varianteNombre}` : prod.nombre;
-    // Clave única en el carrito: id + variante (para poder tener el mismo producto en varias variantes)
     const carritoKey   = varianteNombre  ? `${id}__${varianteNombre}` : id;
 
     const existe = carrito.find(p => p._key === carritoKey);
@@ -358,8 +353,6 @@ window.abrirCarrito = function() {
                 <p class="text-gray-600 text-xs uppercase tracking-widest">Agrega productos para comenzar</p>
             </div>`;
     } else {
-        // Cruzar siempre contra la fuente de verdad: productos cargados de Firebase
-        // (ya sincronizados al cargar la página en cargarProductos)
         const sinStock = carrito.filter(p => p.disponible === false);
         const hayBloqueantes = sinStock.length > 0;
 
@@ -405,10 +398,8 @@ window.abrirCarrito = function() {
         }).join("");
     }
 
-    // Total solo con productos disponibles
     document.getElementById("total-carrito").innerText = `$ ${total.toLocaleString('es-AR')}`;
 
-    // Bloquear/desbloquear botón de enviar
     const btnEnviar = document.getElementById("btn-enviar-pedido");
     const hayBloqueantes2 = carrito.some(p => p.disponible === false);
     if (btnEnviar) {
@@ -416,17 +407,15 @@ window.abrirCarrito = function() {
             btnEnviar.disabled = true;
             btnEnviar.classList.add("opacity-40", "cursor-not-allowed");
             btnEnviar.classList.remove("hover:bg-white");
-            btnEnviar.title = "Eliminá los productos sin stock para poder enviar";
         } else {
             btnEnviar.disabled = false;
             btnEnviar.classList.remove("opacity-40", "cursor-not-allowed");
             btnEnviar.classList.add("hover:bg-white");
-            btnEnviar.title = "";
         }
     }
-
     document.getElementById("modal-carrito").classList.remove("hidden");
 };
+
 // --- PEDIR SIN STOCK POR WHATSAPP ---
 window.pedirSinStock = function(id) {
     const p = productos.find(x => x.id === id);
@@ -458,7 +447,6 @@ function renderLightbox() {
     document.getElementById('lb-img').src = lightboxImagenes[lightboxIndex];
     document.getElementById('lb-counter').textContent = `${lightboxIndex + 1} / ${lightboxImagenes.length}`;
 
-    // Renderizar miniaturas
     const thumbsEl = document.getElementById('lb-thumbs');
     if (lightboxImagenes.length > 1) {
         thumbsEl.innerHTML = lightboxImagenes.map((img, i) => `
@@ -469,8 +457,6 @@ function renderLightbox() {
     } else {
         thumbsEl.innerHTML = '';
     }
-
-    // Ocultar flechas si solo hay una imagen
     document.getElementById('lb-prev').classList.toggle('hidden', lightboxImagenes.length <= 1);
     document.getElementById('lb-next').classList.toggle('hidden', lightboxImagenes.length <= 1);
 }
@@ -478,12 +464,10 @@ function renderLightbox() {
 window.cambiarCantidad = (key, delta) => {
     const item = carrito.find(p => (p._key || p.id) === key);
     if (!item) return;
-
     if (delta === -1 && item.cantidad === 1) {
         eliminarDelCarrito(key);
         return;
     }
-
     item.cantidad += delta;
     if (item.cantidad <= 0) carrito = carrito.filter(p => (p._key || p.id) !== key);
     guardarCarrito(); actualizarContador(); abrirCarrito();
@@ -492,11 +476,9 @@ window.cambiarCantidad = (key, delta) => {
 window.eliminarDelCarrito = (key) => {
     const prod = carrito.find(p => (p._key || p.id) === key);
     if (!prod) return;
-
     document.getElementById("confirm-nombre").textContent = prod.nombre;
     document.getElementById("confirm-img").src = prod.imagenes[0];
     document.getElementById("modal-confirmar").classList.remove("hidden");
-
     window._pendingDeleteId = key;
 };
 
@@ -527,22 +509,24 @@ window.cancelarEliminar = () => {
 
 window.enviarWhatsApp = function() {
     if (!carrito.length) return;
-    // Bloqueo de seguridad: no enviar si hay productos sin stock
     if (carrito.some(p => p.disponible === false)) {
         showToast("Eliminá los productos sin stock para continuar");
         return;
     }
+
+    const baseUrl = window.location.origin + window.location.pathname;
     let msj = "Hola! Deseo adquirir las siguientes piezas:%0A%0A";
     let total = 0;
+
     carrito.forEach(p => {
-        msj += `*• ${p.nombre}* (x${p.cantidad}) - $${(p.precio * p.cantidad).toLocaleString('es-AR')}%0A`;
+        const linkInspeccion = `${baseUrl}?p=${p.id}`;
+        msj += `*• ${p.nombre}* (x${p.cantidad}) - $${(p.precio * p.cantidad).toLocaleString('es-AR')}%0A   🔎 Producto: ${linkInspeccion}%0A%0A`;
         total += p.precio * p.cantidad;
     });
-    // Nota: p.nombre ya incluye la variante en formato "Producto — Variante"
-    msj += `%0A*TOTAL: $${total.toLocaleString('es-AR')}*%0A%0AAtentamente.`;
+
+    msj += `*TOTAL: $${total.toLocaleString('es-AR')}*%0A%0AMuchas gracias!.`;
     window.open(`https://wa.me/5493624895445?text=${msj}`);
     
-    // Limpieza post-venta
     carrito = [];
     guardarCarrito();
     actualizarContador();
@@ -553,7 +537,22 @@ window.enviarWhatsApp = function() {
 // --- INICIO ---
 cargarProductos();
 
-// Teclado: ESC cierra modales, flechas navegan lightbox
+// --- DEEP LINKING: Abrir producto desde URL ---
+window.addEventListener('DOMContentLoaded', () => {
+    const params = new URLSearchParams(window.location.search);
+    const productId = params.get('p');
+
+    if (productId) {
+        const checkProducts = setInterval(() => {
+            if (productos.length > 0) {
+                verDetalles(productId);
+                clearInterval(checkProducts);
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
+        }, 100);
+    }
+});
+
 document.addEventListener('keydown', (e) => {
     const lb = document.getElementById('lightbox');
     if (!lb.classList.contains('hidden')) {
