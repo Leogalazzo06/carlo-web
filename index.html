@@ -467,6 +467,22 @@
 
     <div id="toast" class="fixed bottom-10 left-1/2 -translate-x-1/2 translate-y-32 glass text-white px-8 py-4 rounded-full shadow-2xl z-[300] font-bold text-sm border border-[#d4af37]/30 transition-all duration-500"></div>
 
+    <!-- LOADER DEEP LINK (solo para links ?p=ID desde WhatsApp) -->
+    <div id="deeplink-loader" class="fixed inset-0 z-[400] flex-col items-center justify-center hidden"
+         style="background: rgba(5,5,5,0.97); backdrop-filter: blur(16px);">
+        <div class="flex flex-col items-center gap-6">
+            <div class="relative w-16 h-16">
+                <div class="absolute inset-0 rounded-full border-2 border-[#d4af37]/15"></div>
+                <div class="absolute inset-0 rounded-full border-2 border-transparent border-t-[#d4af37] animate-spin"></div>
+                <div class="absolute inset-2 rounded-full border border-[#d4af37]/20"></div>
+            </div>
+            <div class="text-center">
+                <p class="text-[#d4af37] text-[9px] font-black uppercase tracking-[0.5em] mb-1">Carlo Essential</p>
+                <p class="text-gray-600 text-[9px] uppercase tracking-widest">Cargando producto...</p>
+            </div>
+        </div>
+    </div>
+
     <script type="module" src="script.js"></script>
 </body>
 </html>
