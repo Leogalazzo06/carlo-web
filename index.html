@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CARLO ESSENTIAL | Elegance</title>
+    <title>CARLO ESSENTIAL</title>
     <link rel="icon" href="logo.webp">
     
     <script src="https://cdn.tailwindcss.com"></script>
@@ -51,6 +51,14 @@
         .gold-gradient-text {
             background: linear-gradient(to right, #bf953f, #fcf6ba, #b38728, #fbf5b7, #aa771c);
             -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .silver-gradient-text {
+            background: linear-gradient(to right, #a8a8a8, #ffffff, #c0c0c0, #f0f0f0, #a8a8a8);
+            -webkit-background-clip: text;
+            background-clip: text;
             -webkit-text-fill-color: transparent;
         }
 
@@ -83,6 +91,7 @@
             from { opacity: 0; transform: scale(0.92); }
             to   { opacity: 1; transform: scale(1); }
         }
+        
     </style>
 </head>
 <body>
@@ -135,12 +144,12 @@
                 <div class="h-px w-8 bg-[#d4af37]/60"></div>
             </div>
 
-           <h1 
+     <h1 
   class="hero-reveal font-luxury font-black text-white mb-6 tracking-tight"
   style="animation-delay:0.25s; font-size: clamp(3rem, 7vw, 6.2rem); line-height: 0.95;"
 >
   Accesorios que<br>
-  <span class="gold-gradient-text font-bold">elevan tu estilo</span>
+  <span class="silver-gradient-text font-bold">elevan tu estilo</span>
 </h1>
             <p class="hero-reveal text-gray-400 font-light tracking-[0.4em] uppercase mb-8" style="animation-delay:0.4s; font-size: clamp(0.65rem, 1.5vw, 0.85rem);">
                 Relojes &amp; Accesorios
@@ -281,6 +290,7 @@
                     <button onclick="filtrarCategoria('Relojes')" class="cat-btn px-6 py-2 rounded-full text-xs font-bold uppercase tracking-widest border border-white/10 hover:border-[#d4af37] transition-all">Relojes</button>
                     <button onclick="filtrarCategoria('Pulseras')" class="cat-btn px-6 py-2 rounded-full text-xs font-bold uppercase tracking-widest border border-white/10 hover:border-[#d4af37] transition-all">Pulseras</button>
                     <button onclick="filtrarCategoria('Cadenas')" class="cat-btn px-6 py-2 rounded-full text-xs font-bold uppercase tracking-widest border border-white/10 hover:border-[#d4af37] transition-all">Cadenas</button>
+                    <button onclick="filtrarCategoria('Llaveros')" class="cat-btn px-6 py-2 rounded-full text-xs font-bold uppercase tracking-widest border border-white/10 hover:border-[#d4af37] transition-all">Llaveros</button>
                 </div>
 
                 <div class="relative w-full md:w-96">
@@ -302,17 +312,59 @@
             </div>
     </main>
 
-    <footer class="bg-[#0a0a0a] border-t border-white/5 pt-20 pb-10">
-        <div class="container mx-auto px-4 text-center">
-            <h3 class="text-3xl gold-gradient-text mb-8" style="font-family: 'Cinzel', serif; font-weight: 700;">CARLO ESSENTIAL</h3>
-            <div class="flex justify-center gap-8 mb-12 text-2xl">
-                <a href="#" class="text-gray-500 hover:text-[#d4af37] transition-colors"><i class="fa-brands fa-instagram"></i></a>
-                <a href="#" class="text-gray-500 hover:text-[#d4af37] transition-colors"><i class="fa-brands fa-facebook-f"></i></a>
-                <a href="#" class="text-gray-500 hover:text-[#d4af37] transition-colors"><i class="fa-brands fa-whatsapp"></i></a>
+   <footer class="bg-[#0a0a0a] border-t border-white/5 pt-16 pb-8">
+    <div class="container mx-auto px-4">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-12 mb-12 text-center md:text-left">
+            
+            <div class="flex flex-col items-center md:items-start">
+                <h3 class="text-2xl gold-gradient-text mb-4" style="font-family: 'Cinzel', serif; font-weight: 700;">
+                    CARLO ESSENTIAL
+                </h3>
+                <p class="text-gray-500 text-sm leading-relaxed max-w-xs">
+                    Elevando tu estilo con piezas exclusivas y elegancia atemporal. La esencia de la sofisticación en cada detalle.
+                </p>
             </div>
-            <p class="text-gray-600 text-[10px] tracking-widest uppercase">© 2026 Carlo Essential - All Rights Reserved</p>
+
+            <div class="flex flex-col items-center md:items-start">
+                <h4 class="text-white text-sm uppercase tracking-widest mb-6 font-bold">Navegación</h4>
+                <ul class="space-y-3">
+                    <li><a href="#" class="text-gray-500 hover:text-[#d4af37] transition-colors text-sm">Inicio</a></li>
+                    <li><a href="#" class="text-gray-500 hover:text-[#d4af37] transition-colors text-sm">Colecciones</a></li>
+                </ul>
+            </div>
+
+            <div class="flex flex-col items-center md:items-start">
+                <h4 class="text-white text-sm uppercase tracking-widest mb-6 font-bold">Contacto</h4>
+                <div class="flex gap-6 mb-6 text-xl">
+                    <a href="https://www.instagram.com/carlo.essential/" target="_blank" class="text-gray-500 hover:text-[#d4af37] transition-colors">
+                        <i class="fa-brands fa-instagram"></i>
+                    </a>
+                    <a href="https://wa.me/+5493624895445" target="_blank" class="text-gray-500 hover:text-[#d4af37] transition-colors">
+                        <i class="fa-brands fa-whatsapp"></i>
+                    </a>
+                </div>
+                <p class="text-gray-500 text-sm">Villa Ángela,Chaco, Argentina</p>
+              
+            </div>
         </div>
-    </footer>
+
+        <div class="border-t border-white/5 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+            <p class="text-gray-600 text-[10px] tracking-widest uppercase text-center">
+                © 2026 Carlo Essential - Todos los derechos reservados
+            </p>
+            
+           <p class="text-gray-600 text-[10px] tracking-widest uppercase">
+                Diseñado y desarrollado por 
+                <a href="https://hostara.vercel.app" 
+                   target="_blank" 
+                   rel="noopener noreferrer" 
+                   class="text-gray-400 hover:text-[#d4af37] transition-colors font-bold underline underline-offset-4 decoration-white/10 hover:decoration-[#d4af37]">
+                   Hostara
+                </a>
+            </p>
+        </div>
+    </div>
+</footer>
 
     <div id="modal-detalles" class="fixed inset-0 bg-black/90 hidden z-[110] flex items-end md:items-center justify-center md:p-6 backdrop-blur-xl">
         <div class="modal-card w-full md:max-w-5xl md:rounded-3xl overflow-hidden shadow-2xl relative"
@@ -333,7 +385,7 @@
                     <span class="text-gray-400 uppercase tracking-widest text-xs">Total</span>
                     <span id="total-carrito" class="text-2xl font-light tracking-widest text-white/90">$0</span>
                 </div>
-                <button onclick="enviarWhatsApp()" class="w-full bg-[#d4af37] text-black py-4 rounded-full font-black uppercase tracking-widest hover:bg-white transition-all">
+                <button id="btn-enviar-pedido" onclick="enviarWhatsApp()" class="w-full bg-[#d4af37] text-black py-4 rounded-full font-black uppercase tracking-widest hover:bg-white transition-all">
                     Enviar pedido
                 </button>
             </div>
@@ -369,9 +421,52 @@
         </div>
     </div>
 
+    <!-- LIGHTBOX DE IMÁGENES -->
+    <div id="lightbox" class="fixed inset-0 z-[500] hidden flex items-center justify-center" style="background: rgba(0,0,0,0.95); backdrop-filter: blur(12px);">
+        <!-- Cerrar -->
+        <button onclick="cerrarLightbox()" class="absolute top-5 right-5 w-10 h-10 flex items-center justify-center bg-white/10 rounded-full text-white/70 hover:text-white hover:bg-white/20 transition-all z-10">
+            <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+        <!-- Contador -->
+        <span id="lb-counter" class="absolute top-5 left-1/2 -translate-x-1/2 text-white/40 text-xs uppercase tracking-widest"></span>
+        <!-- Imagen principal -->
+        <div class="relative flex items-center justify-center w-full h-full px-16 py-16">
+            <img id="lb-img" src="" class="max-w-full max-h-full object-contain rounded-2xl shadow-2xl select-none" style="max-height: 80vh;">
+        </div>
+        <!-- Flechas nav -->
+        <button onclick="lightboxNav(-1)" class="absolute left-4 top-1/2 -translate-y-1/2 w-11 h-11 flex items-center justify-center bg-white/10 rounded-full text-white/70 hover:text-white hover:bg-white/20 transition-all" id="lb-prev">
+            <i class="fa-solid fa-chevron-left"></i>
+        </button>
+        <button onclick="lightboxNav(1)" class="absolute right-4 top-1/2 -translate-y-1/2 w-11 h-11 flex items-center justify-center bg-white/10 rounded-full text-white/70 hover:text-white hover:bg-white/20 transition-all" id="lb-next">
+            <i class="fa-solid fa-chevron-right"></i>
+        </button>
+        <!-- Miniaturas -->
+        <div id="lb-thumbs" class="absolute bottom-5 left-1/2 -translate-x-1/2 flex gap-2"></div>
+    </div>
+
+    <!-- SCROLL TO TOP -->
+    <button id="scroll-top-btn"
+        onclick="window.scrollTo({top:0,behavior:'smooth'})"
+        class="fixed bottom-8 right-6 z-[90] w-11 h-11 flex items-center justify-center
+               bg-[#d4af37] text-black rounded-full shadow-lg opacity-0 pointer-events-none
+               transition-all duration-300 hover:bg-white hover:scale-110"
+        title="Volver arriba">
+        <i class="fa-solid fa-chevron-up text-sm"></i>
+    </button>
+    <script>
+        (function() {
+            const btn = document.getElementById('scroll-top-btn');
+            window.addEventListener('scroll', () => {
+                const show = window.scrollY > 400;
+                btn.classList.toggle('opacity-0', !show);
+                btn.classList.toggle('pointer-events-none', !show);
+                btn.classList.toggle('opacity-100', show);
+            }, { passive: true });
+        })();
+    </script>
+
     <div id="toast" class="fixed bottom-10 left-1/2 -translate-x-1/2 translate-y-32 glass text-white px-8 py-4 rounded-full shadow-2xl z-[300] font-bold text-sm border border-[#d4af37]/30 transition-all duration-500"></div>
 
     <script type="module" src="script.js"></script>
 </body>
 </html>
-
