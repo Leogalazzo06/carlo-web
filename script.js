@@ -420,7 +420,9 @@ window.abrirCarrito = function() {
 window.pedirSinStock = function(id) {
     const p = productos.find(x => x.id === id);
     if (!p) return;
-    const msj = `Hola! Me interesa el siguiente producto que aparece sin stock:%0A%0A*${p.nombre}*%0A%0A¿Tienen disponibilidad o fecha estimada de reposición?`;
+    const baseUrl = window.location.origin + window.location.pathname;
+    const linkProducto = `${baseUrl}?p=${p.id}`;
+    const msj = `Hola! Me interesa el siguiente producto que aparece sin stock:%0A%0A*${p.nombre}*%0A🔎 Producto: ${linkProducto}%0A%0A¿Tienen disponibilidad o fecha estimada de reposición?`;
     window.open(`https://wa.me/5493624895445?text=${msj}`);
 };
 
@@ -524,7 +526,7 @@ window.enviarWhatsApp = function() {
         total += p.precio * p.cantidad;
     });
 
-    msj += `*TOTAL: $${total.toLocaleString('es-AR')}*%0A%0AMuchas gracias!.`;
+    msj += `*TOTAL: $${total.toLocaleString('es-AR')}*%0A%0AMuchas gracias!`;
     window.open(`https://wa.me/5493624895445?text=${msj}`);
     
     carrito = [];
