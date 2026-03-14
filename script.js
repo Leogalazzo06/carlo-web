@@ -110,7 +110,7 @@ function renderProductos() {
                     ${disponible ? `<p class="text-white/80 font-light tracking-widest text-sm">$ ${Number(p.precio).toLocaleString('es-AR')}</p>` : `<p class="text-gray-600 font-light tracking-widest text-xs uppercase">Sin disponibilidad</p>`}
                     
                     <button class="mt-4 w-full py-2.5 rounded-full border border-white/10 text-white text-[9px] font-black uppercase tracking-[0.2em] group-hover:bg-[#d4af37] group-hover:text-black group-hover:border-[#d4af37] transition-all duration-500">
-                        Ver Detalles
+                        Ver producto
                     </button>
                 </div>
             </div>
