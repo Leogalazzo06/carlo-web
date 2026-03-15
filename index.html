@@ -287,11 +287,13 @@
         <div class="container mx-auto px-4">
             <div class="flex flex-col md:flex-row gap-8 items-center justify-between">
                 <div class="flex items-center gap-4 overflow-x-auto no-scrollbar w-full md:w-auto pb-4 md:pb-0" id="categorias-container">
-                    <button onclick="filtrarCategoria('Todos')" class="cat-btn active px-6 py-2 rounded-full text-xs font-bold uppercase tracking-widest border border-white/10 bg-white/5 hover:border-[#d4af37] transition-all">Todos</button>
-                    <button onclick="filtrarCategoria('Relojes')" class="cat-btn px-6 py-2 rounded-full text-xs font-bold uppercase tracking-widest border border-white/10 hover:border-[#d4af37] transition-all">Relojes</button>
-                    <button onclick="filtrarCategoria('Pulseras')" class="cat-btn px-6 py-2 rounded-full text-xs font-bold uppercase tracking-widest border border-white/10 hover:border-[#d4af37] transition-all">Pulseras</button>
-                    <button onclick="filtrarCategoria('Cadenas')" class="cat-btn px-6 py-2 rounded-full text-xs font-bold uppercase tracking-widest border border-white/10 hover:border-[#d4af37] transition-all">Cadenas</button>
-                    <button onclick="filtrarCategoria('Llaveros')" class="cat-btn px-6 py-2 rounded-full text-xs font-bold uppercase tracking-widest border border-white/10 hover:border-[#d4af37] transition-all">Llaveros</button>
+                    <button onclick="filtrarCategoria('Todos')" class="cat-btn active px-6 py-2 rounded-full text-xs font-bold uppercase tracking-widest border border-white/10 bg-white/5 hover:border-[#d4af37] transition-all whitespace-nowrap">Todos</button>
+                    <button onclick="filtrarCategoria('Relojes')" class="cat-btn px-6 py-2 rounded-full text-xs font-bold uppercase tracking-widest border border-white/10 hover:border-[#d4af37] transition-all whitespace-nowrap">Relojes</button>
+                    <button onclick="filtrarCategoria('Pulseras')" class="cat-btn px-6 py-2 rounded-full text-xs font-bold uppercase tracking-widest border border-white/10 hover:border-[#d4af37] transition-all whitespace-nowrap">Pulseras</button>
+                    <button onclick="filtrarCategoria('Cadenas')" class="cat-btn px-6 py-2 rounded-full text-xs font-bold uppercase tracking-widest border border-white/10 hover:border-[#d4af37] transition-all whitespace-nowrap">Cadenas</button>
+                    <button onclick="filtrarCategoria('Llaveros')" class="cat-btn px-6 py-2 rounded-full text-xs font-bold uppercase tracking-widest border border-white/10 hover:border-[#d4af37] transition-all whitespace-nowrap">Llaveros</button>
+                    <button onclick="filtrarCategoria('Perfumeros')" class="cat-btn px-6 py-2 rounded-full text-xs font-bold uppercase tracking-widest border border-white/10 hover:border-[#d4af37] transition-all whitespace-nowrap">Perfumeros</button>
+                    <button onclick="filtrarCategoria('Ofertas')" class="cat-btn px-6 py-2 rounded-full text-xs font-bold uppercase tracking-widest border border-[#d4af37]/40 text-[#d4af37] hover:bg-[#d4af37] hover:text-black transition-all whitespace-nowrap">🏷 Ofertas</button>
                 </div>
 
                 <div class="relative w-full md:w-96">
@@ -378,7 +380,12 @@
         <div class="w-full sm:max-w-md bg-[#0a0a0a] h-full shadow-2xl flex flex-col border-l border-white/10 animate-[slideIn_0.3s_ease-out]">
             <div class="p-8 border-b border-white/5 flex justify-between items-center">
                 <h2 class="text-2xl font-luxury font-semibold tracking-wide">Tu carrito</h2>
-                <button onclick="cerrarModal('modal-carrito')" class="text-gray-500 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
+                <div class="flex items-center gap-3">
+                    <button id="btn-vaciar" onclick="vaciarCarrito()" class="hidden text-[9px] font-black uppercase tracking-widest text-red-500/70 hover:text-red-400 border border-red-500/20 hover:border-red-400/40 px-3 py-1.5 rounded-full transition-all">
+                        <i class="fa-solid fa-trash-can mr-1 text-[8px]"></i> Vaciar
+                    </button>
+                    <button onclick="cerrarModal('modal-carrito')" class="text-gray-500 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
+                </div>
             </div>
             <div id="carrito-lista" class="flex-1 overflow-y-auto p-6 space-y-6"></div>
             <div class="p-8 border-t border-white/5">
@@ -422,7 +429,27 @@
         </div>
     </div>
 
-    <!-- LIGHTBOX DE IMÁGENES -->
+    <!-- MODAL CONFIRMAR VACIAR CARRITO -->
+    <div id="modal-vaciar" class="fixed inset-0 z-[200] hidden flex items-center justify-center px-5" style="background: rgba(0,0,0,0.75); backdrop-filter: blur(8px);">
+        <div class="w-full max-w-sm bg-[#111] border border-white/10 rounded-3xl overflow-hidden shadow-2xl animate-[fadeInScale_0.25s_ease-out]">
+            <div class="p-8 text-center">
+                <div class="w-16 h-16 rounded-full bg-red-500/10 border border-red-500/25 flex items-center justify-center mx-auto mb-5">
+                    <i class="fa-solid fa-cart-xmark text-red-400 text-2xl"></i>
+                </div>
+                <h3 class="font-luxury font-semibold text-white text-2xl mb-2 tracking-wide">¿Vaciar carrito?</h3>
+                <p class="text-gray-500 text-xs uppercase tracking-widest mb-1">Se van a eliminar todos los productos</p>
+                <p class="text-gray-600 text-xs mb-8">Esta acción no se puede deshacer.</p>
+                <div class="flex gap-3">
+                    <button onclick="cancelarVaciar()" class="flex-1 py-3 rounded-full border border-white/10 text-white/60 text-xs font-bold uppercase tracking-widest hover:border-white/30 hover:text-white transition-all">
+                        Cancelar
+                    </button>
+                    <button onclick="confirmarVaciar()" class="flex-1 py-3 rounded-full bg-red-500/90 text-white text-xs font-black uppercase tracking-widest hover:bg-red-500 transition-all shadow-lg">
+                        Vaciar todo
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
     <div id="lightbox" class="fixed inset-0 z-[500] hidden flex items-center justify-center" style="background: rgba(0,0,0,0.95); backdrop-filter: blur(12px);">
         <!-- Cerrar -->
         <button onclick="cerrarLightbox()" class="absolute top-5 right-5 w-10 h-10 flex items-center justify-center bg-white/10 rounded-full text-white/70 hover:text-white hover:bg-white/20 transition-all z-10">
