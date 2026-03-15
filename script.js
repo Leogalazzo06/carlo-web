@@ -55,19 +55,37 @@ async function cargarProductos() {
 
         // Sincronizar carrito contra stock real de Firebase
         let huboSinStockNuevo = false;
+        let huboCambioPrecio  = false;
         carrito = carrito.map(item => {
             const fresh = productos.find(p => p.id === item.id);
             if (!fresh) return item;
+
             const eraDisponible   = item.disponible !== false;
             const ahoraDisponible = fresh.disponible !== false;
             if (eraDisponible && !ahoraDisponible) huboSinStockNuevo = true;
-            return { ...item, disponible: fresh.disponible };
+
+            // Calcular precio actualizado (con oferta si aplica)
+            const enOferta   = fresh.enOferta === true && fresh.precioOferta > 0 && fresh.precioOferta < fresh.precio;
+            // Solo recalcular si el item NO es una variante (variantes tienen precio propio)
+            const esVariante = item._key && item._key.includes('__');
+            let precioActual = item.precio;
+            if (!esVariante) {
+                precioActual = enOferta ? fresh.precioOferta : fresh.precio;
+                if (precioActual !== item.precio) huboCambioPrecio = true;
+            }
+
+            return {
+                ...item,
+                disponible:   fresh.disponible,
+                precio:       precioActual,
+                enOferta:     fresh.enOferta,
+                precioOferta: fresh.precioOferta
+            };
         });
         guardarCarrito();
 
-        if (huboSinStockNuevo) {
-            showToast("Hay productos en tu carrito que ya no tienen stock");
-        }
+        if (huboSinStockNuevo) showToast("Hay productos en tu carrito que ya no tienen stock");
+        if (huboCambioPrecio)  showToast("El precio de un producto en tu carrito fue actualizado");
 
         renderProductos();
         actualizarContador();
