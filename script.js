@@ -91,24 +91,32 @@ function renderProductos() {
 
     contenedor.innerHTML = productosFiltrados.map(p => {
         const disponible = p.disponible !== false;
-        const enOferta   = p.enOferta === true;
+        const enOferta   = p.enOferta === true && p.precioOferta > 0 && p.precioOferta < p.precio;
+        const pct        = enOferta ? Math.round((1 - p.precioOferta / p.precio) * 100) : 0;
+
+        const precioDB = disponible
+            ? (enOferta
+                ? `<div class="flex items-center justify-center gap-2 flex-wrap">
+                       <span class="text-gray-500 line-through text-xs font-light">$ ${Number(p.precio).toLocaleString('es-AR')}</span>
+                       <span class="text-white/90 font-bold tracking-widest text-sm">$ ${Number(p.precioOferta).toLocaleString('es-AR')}</span>
+                       <span class="bg-[#d4af37] text-black text-[8px] font-black px-2 py-0.5 rounded-full">-${pct}%</span>
+                   </div>`
+                : `<p class="text-white/80 font-light tracking-widest text-sm">$ ${Number(p.precio).toLocaleString('es-AR')}</p>`)
+            : `<p class="text-gray-600 font-light tracking-widest text-xs uppercase">Sin disponibilidad</p>`;
 
         return `
             <div class="product-card group relative rounded-3xl overflow-hidden" onclick="verDetalles('${p.id}')">
                 <div class="aspect-[4/5] overflow-hidden relative">
                     <img src="${p.imagenes[0]}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 ${!disponible ? 'grayscale opacity-40' : ''}" loading="lazy">
-                    
                     <div class="absolute top-4 left-4 flex flex-col gap-2">
-                        ${enOferta ? '<span class="bg-[#d4af37] text-black text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-widest shadow-xl">Limited Edition</span>' : ''}
+                        ${enOferta ? `<span class="bg-[#d4af37] text-black text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-widest shadow-xl">-${pct}% OFF</span>` : ''}
                         ${!disponible ? '<span class="bg-white/10 backdrop-blur-md text-white text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-widest">Sold Out</span>' : ''}
                     </div>
                 </div>
-
                 <div class="p-4 text-center">
                     <p class="text-[9px] text-[#d4af37] font-bold uppercase tracking-[0.3em] mb-1">${p.categoria || 'Colección'}</p>
                     <h3 class="font-luxury font-semibold text-base text-white mb-2 group-hover:text-[#d4af37] transition-colors leading-tight">${p.nombre}</h3>
-                    ${disponible ? `<p class="text-white/80 font-light tracking-widest text-sm">$ ${Number(p.precio).toLocaleString('es-AR')}</p>` : `<p class="text-gray-600 font-light tracking-widest text-xs uppercase">Sin disponibilidad</p>`}
-                    
+                    ${precioDB}
                     <button class="mt-4 w-full py-2.5 rounded-full border border-white/10 text-white text-[9px] font-black uppercase tracking-[0.2em] group-hover:bg-[#d4af37] group-hover:text-black group-hover:border-[#d4af37] transition-all duration-500">
                         Ver producto
                     </button>
@@ -122,8 +130,15 @@ function renderProductos() {
 window.filtrarCategoria = function(cat) {
     categoriaActual = cat;
     document.querySelectorAll('.cat-btn').forEach(btn => {
-        btn.classList.remove('active', 'border-[#d4af37]', 'text-[#d4af37]');
-        if (btn.innerText.trim() === cat) btn.classList.add('active', 'border-[#d4af37]', 'text-[#d4af37]');
+        const label = btn.innerText.trim().replace('🏷 ', '');
+        btn.classList.remove('active', 'border-[#d4af37]', 'text-[#d4af37]', 'bg-[#d4af37]', 'text-black');
+        if (label === cat || btn.innerText.trim() === cat) {
+            btn.classList.add('active', 'border-[#d4af37]', 'text-[#d4af37]');
+            if (cat === 'Ofertas') {
+                btn.classList.add('bg-[#d4af37]', 'text-black');
+                btn.classList.remove('text-[#d4af37]');
+            }
+        }
     });
     aplicarFiltros();
 };
@@ -132,7 +147,8 @@ function aplicarFiltros() {
     const texto = document.getElementById('buscador-principal').value.toLowerCase().trim();
     productosFiltrados = productos.filter(p => {
         const matchText = p.nombre.toLowerCase().includes(texto) || (p.categoria && p.categoria.toLowerCase().includes(texto));
-        const matchCat  = (categoriaActual === "Todos") || (p.categoria === categoriaActual);
+        const matchCat  = (categoriaActual === "Todos")
+            || (categoriaActual === "Ofertas" ? p.enOferta === true : p.categoria === categoriaActual);
         return matchText && matchCat;
     });
     renderProductos();
@@ -140,11 +156,11 @@ function aplicarFiltros() {
 
 document.getElementById('buscador-principal').addEventListener('input', aplicarFiltros);
 
-// --- HELPER: precio + variantes + botón carrito ---
 function renderPrecioVariantes(p, modo) {
     const isMobile = modo === 'mobile';
     const textoPrecioBase = isMobile ? 'text-2xl' : 'text-3xl';
     const btnPy           = isMobile ? 'py-3.5 text-xs' : 'py-5 text-sm';
+    const enOferta        = p.enOferta === true && p.precioOferta > 0 && p.precioOferta < p.precio;
 
     // Sin stock
     if (p.disponible === false) {
@@ -155,7 +171,19 @@ function renderPrecioVariantes(p, modo) {
             </button>`;
     }
 
-    // Con variantes
+    // Helper: bloque precio con o sin oferta
+    function precioHTML(precioOriginal, claseTexto) {
+        if (!enOferta) return `<p class="text-white/80 font-light tracking-widest ${claseTexto}">$ ${Number(precioOriginal).toLocaleString('es-AR')}</p>`;
+        const pct = Math.round((1 - p.precioOferta / precioOriginal) * 100);
+        return `
+            <div class="flex items-center gap-3 flex-wrap">
+                <span class="text-gray-500 line-through font-light text-lg">$ ${Number(precioOriginal).toLocaleString('es-AR')}</span>
+                <span class="text-white/90 font-bold tracking-widest ${claseTexto}">$ ${Number(p.precioOferta).toLocaleString('es-AR')}</span>
+                <span class="bg-[#d4af37] text-black text-[9px] font-black px-2.5 py-1 rounded-full">-${pct}%</span>
+            </div>`;
+    }
+
+    // Con variantes (las variantes no se mezclan con precio oferta global)
     if (p.variantes && p.variantes.length > 0) {
         const primeraVariante = p.variantes[0];
         const opcionesHTML = p.variantes.map((v, i) => `
@@ -185,10 +213,10 @@ function renderPrecioVariantes(p, modo) {
             </button>`;
     }
 
-    // Sin variantes (precio simple)
+    // Sin variantes
     return `
         <div class="${isMobile ? '' : 'mb-10'}">
-            <p class="text-white/80 font-light tracking-widest ${textoPrecioBase}">$ ${Number(p.precio).toLocaleString('es-AR')}</p>
+            ${precioHTML(p.precio, textoPrecioBase)}
         </div>
         <button onclick="agregarCarrito('${p.id}')"
             class="w-full bg-[#d4af37] text-black ${btnPy} rounded-full font-black uppercase tracking-widest hover:bg-white transition-all shadow-xl">
@@ -236,9 +264,12 @@ window.verDetalles = function(id) {
             `).join('')}
         </div>` : '';
 
+    const enOferta   = p.enOferta === true && p.precioOferta > 0 && p.precioOferta < p.precio;
+    const pct        = enOferta ? Math.round((1 - p.precioOferta / p.precio) * 100) : 0;
+
     const badges = `
         <div class="absolute top-4 left-4 flex flex-col gap-2">
-            ${p.enOferta ? '<span class="bg-[#d4af37] text-black text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-widest shadow-xl">Limited Edition</span>' : ''}
+            ${enOferta ? `<span class="bg-[#d4af37] text-black text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-widest shadow-xl">-${pct}% OFF</span>` : ''}
             ${p.disponible === false ? '<span class="bg-white/10 backdrop-blur-md text-white text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-widest">Sold Out</span>' : ''}
         </div>`;
 
@@ -318,9 +349,11 @@ window.agregarCarrito = function(id, varianteNombre, variantePrecio) {
     const prod = productos.find(p => p.id === id);
     if (!prod || prod.disponible === false) return showToast("Pieza no disponible");
 
-    const precioFinal  = variantePrecio  ? Number(variantePrecio)  : prod.precio;
-    const nombreFinal  = varianteNombre  ? `${prod.nombre} — ${varianteNombre}` : prod.nombre;
-    const carritoKey   = varianteNombre  ? `${id}__${varianteNombre}` : id;
+    const enOferta    = prod.enOferta === true && prod.precioOferta > 0 && prod.precioOferta < prod.precio;
+    const precioBase  = variantePrecio ? Number(variantePrecio) : prod.precio;
+    const precioFinal = (!variantePrecio && enOferta) ? prod.precioOferta : precioBase;
+    const nombreFinal   = varianteNombre  ? `${prod.nombre} — ${varianteNombre}` : prod.nombre;
+    const carritoKey    = varianteNombre  ? `${id}__${varianteNombre}` : id;
 
     const existe = carrito.find(p => p._key === carritoKey);
     if (existe) {
@@ -338,12 +371,32 @@ function guardarCarrito() {
     localStorage.setItem("carlo-web", JSON.stringify(carrito));
 }
 
+window.vaciarCarrito = function() {
+    document.getElementById("modal-vaciar").classList.remove("hidden");
+};
+
+window.confirmarVaciar = function() {
+    document.getElementById("modal-vaciar").classList.add("hidden");
+    carrito = [];
+    guardarCarrito();
+    actualizarContador();
+    abrirCarrito();
+    showToast("Carrito vaciado");
+};
+
+window.cancelarVaciar = function() {
+    document.getElementById("modal-vaciar").classList.add("hidden");
+};
+
 window.abrirCarrito = function() {
     const lista = document.getElementById("carrito-lista");
     let total = 0;
 
     document.getElementById("modal-carrito").classList.remove("hidden");
     document.body.classList.add("modal-active");
+
+    const btnVaciar = document.getElementById("btn-vaciar");
+    if (btnVaciar) btnVaciar.classList.toggle("hidden", carrito.length === 0);
 
     if (!carrito.length) {
         lista.innerHTML = `
