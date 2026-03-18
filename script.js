@@ -218,30 +218,66 @@ function renderPrecioVariantes(p, modo) {
     // Con variantes (las variantes no se mezclan con precio oferta global)
     if (p.variantes && p.variantes.length > 0) {
         const primeraVariante = p.variantes[0];
-        const opcionesHTML = p.variantes.map((v, i) => `
+        const primeraDisponible = primeraVariante.disponible !== false;
+
+        // Helper: renderiza el bloque de precio para una variante (tachado + oferta o normal)
+        function precioVarianteHTML(v, claseTexto) {
+            const vEnOferta = v.enOferta === true && v.precioOferta > 0 && v.precioOferta < v.precio;
+            if (!vEnOferta) {
+                return `<span class="${claseTexto}">$ ${Number(v.precio).toLocaleString('es-AR')}</span>`;
+            }
+            const pct = Math.round((1 - v.precioOferta / v.precio) * 100);
+            return `
+                <span class="text-gray-500 line-through font-light" style="font-size:0.85em;">$ ${Number(v.precio).toLocaleString('es-AR')}</span>
+                <span class="${claseTexto}">$ ${Number(v.precioOferta).toLocaleString('es-AR')}</span>
+                <span class="bg-[#d4af37] text-black text-[8px] font-black px-2 py-0.5 rounded-full">-${pct}%</span>`;
+        }
+
+        const opcionesHTML = p.variantes.map((v, i) => {
+            const vDisponible = v.disponible !== false;
+            const vEnOferta   = v.enOferta === true && v.precioOferta > 0 && v.precioOferta < v.precio;
+            const precioLabel = vDisponible
+                ? (vEnOferta
+                    ? `<span class="line-through text-[9px] opacity-50">$${Number(v.precio).toLocaleString('es-AR')}</span> <span class="text-[#d4af37]">$${Number(v.precioOferta).toLocaleString('es-AR')}</span>`
+                    : `$ ${Number(v.precio).toLocaleString('es-AR')}`)
+                : `<span class="text-red-400/70">Sin stock</span>`;
+
+            return `
             <button type="button"
-                onclick="seleccionarVariante('${p.id}', '${v.nombre}', ${v.precio}, this)"
+                onclick="seleccionarVariante('${p.id}', '${v.nombre}', ${v.precio}, ${vDisponible}, this, ${vEnOferta ? v.precioOferta : 0})"
                 class="variante-btn flex-1 px-3 py-2.5 rounded-xl border text-xs font-bold uppercase tracking-wider transition-all
-                    ${i === 0 ? 'border-[#d4af37] bg-[#d4af37]/10 text-[#d4af37]' : 'border-white/10 text-gray-400 hover:border-white/30'}"
-                data-nombre="${v.nombre}" data-precio="${v.precio}">
+                    ${i === 0
+                        ? (vDisponible ? 'border-[#d4af37] bg-[#d4af37]/10 text-[#d4af37]' : 'border-red-500/50 bg-red-500/10 text-red-400')
+                        : (vDisponible ? 'border-white/10 text-gray-400 hover:border-white/30' : 'border-red-500/20 text-red-500/50 hover:border-red-500/40')
+                    }"
+                data-nombre="${v.nombre}" data-precio="${v.precio}" data-disponible="${vDisponible}" data-precio-oferta="${vEnOferta ? v.precioOferta : 0}">
                 ${v.nombre}<br>
-                <span class="font-light normal-case tracking-normal text-[10px]">$ ${Number(v.precio).toLocaleString('es-AR')}</span>
-            </button>`).join('');
+                <span class="font-light normal-case tracking-normal text-[10px] flex items-center gap-1 justify-center flex-wrap">${precioLabel}</span>
+            </button>`;
+        }).join('');
+
+        // Display inicial (primera variante)
+        const v0EnOferta = primeraVariante.enOferta === true && primeraVariante.precioOferta > 0 && primeraVariante.precioOferta < primeraVariante.precio;
+        const displayInicial = primeraDisponible
+            ? `<span class="flex items-center gap-3 flex-wrap">${precioVarianteHTML(primeraVariante, textoPrecioBase)}</span>`
+            : `<span class="text-red-400 text-sm uppercase tracking-widest font-light">Sin stock</span>`;
 
         return `
             <div class="${isMobile ? '' : 'mb-4'}">
-                <p id="precio-display-${p.id}" class="text-white/80 font-light tracking-widest ${textoPrecioBase} ${isMobile ? '' : 'mb-2'}">
-                    $ ${Number(primeraVariante.precio).toLocaleString('es-AR')}
+                <p id="precio-display-${p.id}" class="text-white/80 font-light tracking-widest ${isMobile ? '' : 'mb-2'}" style="display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap;">
+                    ${displayInicial}
                 </p>
             </div>
             <div class="flex flex-wrap gap-2 ${isMobile ? 'mb-0' : 'mb-6'}">
                 ${opcionesHTML}
             </div>
             <input type="hidden" id="variante-sel-nombre-${p.id}" value="${primeraVariante.nombre}">
-            <input type="hidden" id="variante-sel-precio-${p.id}" value="${primeraVariante.precio}">
+            <input type="hidden" id="variante-sel-precio-${p.id}" value="${v0EnOferta ? primeraVariante.precioOferta : primeraVariante.precio}">
+            <input type="hidden" id="variante-sel-disponible-${p.id}" value="${primeraDisponible}">
             <button id="btn-add-${p.id}" onclick="agregarCarritoConVariante('${p.id}')"
-                class="w-full bg-[#d4af37] text-black ${btnPy} rounded-full font-black uppercase tracking-widest hover:bg-white transition-all shadow-xl ${isMobile ? '' : 'mt-2'}">
-                Añadir al Carrito
+                class="w-full ${primeraDisponible ? 'bg-[#d4af37] text-black hover:bg-white' : 'bg-white/5 text-gray-500 cursor-not-allowed'} ${btnPy} rounded-full font-black uppercase tracking-widest transition-all shadow-xl ${isMobile ? '' : 'mt-2'}"
+                ${primeraDisponible ? '' : 'disabled'}>
+                ${primeraDisponible ? 'Añadir al Carrito' : 'Sin stock'}
             </button>`;
     }
 
@@ -256,25 +292,79 @@ function renderPrecioVariantes(p, modo) {
         </button>`;
 }
 
-window.seleccionarVariante = function(prodId, nombre, precio, btnEl) {
+window.seleccionarVariante = function(prodId, nombre, precio, disponible, btnEl, precioOferta = 0) {
+    const enOferta = precioOferta > 0 && precioOferta < precio;
+    const precioFinal = enOferta ? precioOferta : precio;
+
     // Actualizar display de precio
     const display = document.getElementById(`precio-display-${prodId}`);
-    if (display) display.textContent = `$ ${Number(precio).toLocaleString('es-AR')}`;
-    // Guardar selección
+    if (display) {
+        if (!disponible) {
+            display.innerHTML = `<span class="text-red-400 text-sm uppercase tracking-widest font-light">Sin stock</span>`;
+        } else if (enOferta) {
+            const pct = Math.round((1 - precioOferta / precio) * 100);
+            display.innerHTML = `
+                <span class="text-gray-500 line-through font-light text-lg">$ ${Number(precio).toLocaleString('es-AR')}</span>
+                <span class="text-white/90 font-bold tracking-widest text-3xl">$ ${Number(precioOferta).toLocaleString('es-AR')}</span>
+                <span class="bg-[#d4af37] text-black text-[9px] font-black px-2.5 py-1 rounded-full">-${pct}%</span>`;
+        } else {
+            display.innerHTML = `<span class="text-white/80 font-light tracking-widest text-3xl">$ ${Number(precio).toLocaleString('es-AR')}</span>`;
+        }
+    }
+
+    // Guardar selección — precio final para el carrito
     document.getElementById(`variante-sel-nombre-${prodId}`).value = nombre;
-    document.getElementById(`variante-sel-precio-${prodId}`).value = precio;
+    document.getElementById(`variante-sel-precio-${prodId}`).value = precioFinal;
+    const dispInput = document.getElementById(`variante-sel-disponible-${prodId}`);
+    if (dispInput) dispInput.value = disponible ? 'true' : 'false';
+
+    // Actualizar botón de carrito
+    const btnAdd = document.getElementById(`btn-add-${prodId}`);
+    if (btnAdd) {
+        if (disponible) {
+            btnAdd.disabled = false;
+            btnAdd.textContent = 'Añadir al Carrito';
+            btnAdd.classList.remove('bg-white/5', 'text-gray-500', 'cursor-not-allowed');
+            btnAdd.classList.add('bg-[#d4af37]', 'text-black', 'hover:bg-white');
+        } else {
+            btnAdd.disabled = true;
+            btnAdd.textContent = 'Sin stock';
+            btnAdd.classList.remove('bg-[#d4af37]', 'text-black', 'hover:bg-white');
+            btnAdd.classList.add('bg-white/5', 'text-gray-500', 'cursor-not-allowed');
+        }
+    }
+
     // Resaltar botón activo
     btnEl.closest('.flex').querySelectorAll('.variante-btn').forEach(b => {
-        b.classList.remove('border-[#d4af37]', 'bg-[#d4af37]/10', 'text-[#d4af37]');
-        b.classList.add('border-white/10', 'text-gray-400');
+        const bDisp = b.dataset.disponible !== 'false';
+        b.classList.remove('border-[#d4af37]', 'bg-[#d4af37]/10', 'text-[#d4af37]',
+                           'border-red-500/50', 'bg-red-500/10', 'text-red-400',
+                           'border-white/10', 'text-gray-400',
+                           'border-red-500/20', 'text-red-500/50');
+        if (bDisp) {
+            b.classList.add('border-white/10', 'text-gray-400');
+        } else {
+            b.classList.add('border-red-500/20', 'text-red-500/50');
+        }
     });
-    btnEl.classList.add('border-[#d4af37]', 'bg-[#d4af37]/10', 'text-[#d4af37]');
-    btnEl.classList.remove('border-white/10', 'text-gray-400');
+    if (disponible) {
+        btnEl.classList.remove('border-white/10', 'text-gray-400', 'border-red-500/20', 'text-red-500/50');
+        btnEl.classList.add('border-[#d4af37]', 'bg-[#d4af37]/10', 'text-[#d4af37]');
+    } else {
+        btnEl.classList.remove('border-white/10', 'text-gray-400', 'border-red-500/20', 'text-red-500/50');
+        btnEl.classList.add('border-red-500/50', 'bg-red-500/10', 'text-red-400');
+    }
 };
 
 window.agregarCarritoConVariante = function(prodId) {
-    const nombre = document.getElementById(`variante-sel-nombre-${prodId}`)?.value;
-    const precio = document.getElementById(`variante-sel-precio-${prodId}`)?.value;
+    const nombre    = document.getElementById(`variante-sel-nombre-${prodId}`)?.value;
+    const precio    = document.getElementById(`variante-sel-precio-${prodId}`)?.value;
+    const dispInput = document.getElementById(`variante-sel-disponible-${prodId}`);
+    const disponible = dispInput ? dispInput.value !== 'false' : true;
+    if (!disponible) {
+        showToast("Esta variante no tiene stock");
+        return;
+    }
     agregarCarrito(prodId, nombre, precio ? Number(precio) : null);
 };
 
