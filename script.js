@@ -56,9 +56,14 @@ async function cargarProductos() {
         // Sincronizar carrito contra stock real de Firebase
         let huboSinStockNuevo = false;
         let huboCambioPrecio  = false;
+        let huboEliminado     = false;
         carrito = carrito.map(item => {
             const fresh = productos.find(p => p.id === item.id);
-            if (!fresh) return item;
+            if (!fresh) {
+                // Producto eliminado de la base de datos
+                if (!item._eliminado) huboEliminado = true;
+                return { ...item, _eliminado: true };
+            }
 
             const eraDisponible   = item.disponible !== false;
             const ahoraDisponible = fresh.disponible !== false;
@@ -76,6 +81,7 @@ async function cargarProductos() {
 
             return {
                 ...item,
+                _eliminado:   false,
                 disponible:   fresh.disponible,
                 precio:       precioActual,
                 enOferta:     fresh.enOferta,
@@ -84,6 +90,7 @@ async function cargarProductos() {
         });
         guardarCarrito();
 
+        if (huboEliminado)    showToast("Un producto de tu carrito ya no está disponible");
         if (huboSinStockNuevo) showToast("Hay productos en tu carrito que ya no tienen stock");
         if (huboCambioPrecio)  showToast("El precio de un producto en tu carrito fue actualizado");
 
@@ -159,6 +166,13 @@ window.filtrarCategoria = function(cat) {
         }
     });
     aplicarFiltros();
+    // Scroll hacia la sección de productos (con offset por el nav sticky)
+    const seccion = document.getElementById('productos');
+    if (seccion) {
+        const navHeight = document.querySelector('nav')?.offsetHeight || 0;
+        const top = seccion.getBoundingClientRect().top + window.scrollY - navHeight - 16;
+        window.scrollTo({ top, behavior: 'smooth' });
+    }
 };
 
 function aplicarFiltros() {
@@ -351,7 +365,7 @@ window.verDetalles = function(id) {
     }
 
     document.getElementById("modal-detalles").classList.remove("hidden");
-    document.body.classList.add("modal-active");
+    bloquearScroll();
 };
 
 window.cambiarImagenDetalle = (src) => {
@@ -411,7 +425,7 @@ window.abrirCarrito = function() {
     let total = 0;
 
     document.getElementById("modal-carrito").classList.remove("hidden");
-    document.body.classList.add("modal-active");
+    bloquearScroll();
 
     const btnVaciar = document.getElementById("btn-vaciar");
     if (btnVaciar) btnVaciar.classList.toggle("hidden", carrito.length === 0);
@@ -424,13 +438,25 @@ window.abrirCarrito = function() {
                 <p class="text-gray-600 text-xs uppercase tracking-widest">Agrega productos para comenzar</p>
             </div>`;
     } else {
-        const sinStock = carrito.filter(p => p.disponible === false);
-        const hayBloqueantes = sinStock.length > 0;
+        const sinStock    = carrito.filter(p => p.disponible === false && !p._eliminado);
+        const eliminados  = carrito.filter(p => p._eliminado);
+        const hayBloqueantes = sinStock.length > 0 || eliminados.length > 0;
 
         let avisoSinStock = '';
-        if (hayBloqueantes) {
+        if (eliminados.length > 0) {
+            const nombres = eliminados.map(p => `<strong>${p.nombre}</strong>`).join(', ');
+            avisoSinStock += `
+                <div class="flex items-start gap-3 bg-orange-500/10 border border-orange-500/30 rounded-2xl p-4 mb-2">
+                    <i class="fa-solid fa-triangle-exclamation text-orange-400 mt-0.5 flex-shrink-0 text-base"></i>
+                    <div>
+                        <p class="text-orange-400 text-xs font-black uppercase tracking-widest mb-1">Producto eliminado</p>
+                        <p class="text-orange-200/60 text-xs leading-relaxed">${nombres} ${eliminados.length > 1 ? 'ya no están disponibles' : 'ya no está disponible'}. Eliminá ${eliminados.length > 1 ? 'esos productos' : 'ese producto'} del carrito para continuar.</p>
+                    </div>
+                </div>`;
+        }
+        if (sinStock.length > 0) {
             const nombres = sinStock.map(p => `<strong>${p.nombre}</strong>`).join(', ');
-            avisoSinStock = `
+            avisoSinStock += `
                 <div class="flex items-start gap-3 bg-red-500/10 border border-red-500/30 rounded-2xl p-4 mb-2">
                     <i class="fa-solid fa-circle-exclamation text-red-400 mt-0.5 flex-shrink-0 text-base"></i>
                     <div>
@@ -441,27 +467,45 @@ window.abrirCarrito = function() {
         }
 
         lista.innerHTML = avisoSinStock + carrito.map(p => {
-            const esSinStock = p.disponible === false;
-            if (!esSinStock) total += p.precio * p.cantidad;
+            const esEliminado = p._eliminado === true;
+            const esSinStock  = p.disponible === false && !esEliminado;
+            const esProblema  = esEliminado || esSinStock;
+            if (!esProblema) total += p.precio * p.cantidad;
+
+            const borderClass = esEliminado ? 'border-orange-500/25' : esSinStock ? 'border-red-500/25' : 'border-white/5';
+            const imgClass    = esProblema ? 'grayscale opacity-40' : '';
+            const iconOverlay = esEliminado
+                ? '<div class="absolute inset-0 flex items-center justify-center"><i class="fa-solid fa-triangle-exclamation text-orange-400/90 text-xl"></i></div>'
+                : esSinStock
+                    ? '<div class="absolute inset-0 flex items-center justify-center"><i class="fa-solid fa-ban text-red-400/80 text-xl"></i></div>'
+                    : '';
+            const subtitulo = esEliminado
+                ? `<p class="text-orange-400 text-[9px] uppercase tracking-widest font-black">Eliminado — quitá este producto</p>`
+                : esSinStock
+                    ? `<p class="text-red-400 text-[9px] uppercase tracking-widest font-black">Sin stock — eliminá este producto</p>`
+                    : `<p class="text-[#d4af37] font-bold text-sm">$ ${(p.precio * p.cantidad).toLocaleString('es-AR')}</p>`;
+            const trashClass = esEliminado
+                ? 'text-orange-500 bg-orange-500/15 hover:bg-orange-500 hover:text-white'
+                : esSinStock
+                    ? 'text-red-500 bg-red-500/15 hover:bg-red-500 hover:text-white'
+                    : 'text-gray-600 hover:text-red-400 hover:bg-red-400/10';
+
             return `
-                <div class="flex gap-3 items-center bg-white/5 p-3 rounded-2xl border ${esSinStock ? 'border-red-500/25' : 'border-white/5'}">
+                <div class="flex gap-3 items-center bg-white/5 p-3 rounded-2xl border ${borderClass}">
                     <div class="relative flex-shrink-0">
-                        <img src="${p.imagenes[0]}" class="w-16 h-16 object-cover rounded-xl ${esSinStock ? 'grayscale opacity-40' : ''}">
-                        ${esSinStock ? '<div class="absolute inset-0 flex items-center justify-center"><i class="fa-solid fa-ban text-red-400/80 text-xl"></i></div>' : ''}
+                        <img src="${p.imagenes[0]}" class="w-16 h-16 object-cover rounded-xl ${imgClass}">
+                        ${iconOverlay}
                     </div>
                     <div class="flex-1 min-w-0">
-                        <h4 class="font-luxury font-semibold text-white text-base truncate ${esSinStock ? 'line-through opacity-50' : ''}">${p.nombre}</h4>
-                        ${esSinStock
-                            ? `<p class="text-red-400 text-[9px] uppercase tracking-widest font-black">Sin stock — eliminá este producto</p>`
-                            : `<p class="text-[#d4af37] font-bold text-sm">$ ${(p.precio * p.cantidad).toLocaleString('es-AR')}</p>`
-                        }
+                        <h4 class="font-luxury font-semibold text-white text-base truncate ${esProblema ? 'line-through opacity-50' : ''}">${p.nombre}</h4>
+                        ${subtitulo}
                         <div class="flex items-center gap-3 mt-1.5">
-                            <button onclick="cambiarCantidad('${p._key || p.id}', -1)" class="w-6 h-6 flex items-center justify-center text-gray-400 hover:text-white border border-white/10 rounded-full transition-colors ${esSinStock ? 'opacity-30 pointer-events-none' : ''}"><i class="fa-solid fa-minus text-[9px]"></i></button>
+                            <button onclick="cambiarCantidad('${p._key || p.id}', -1)" class="w-6 h-6 flex items-center justify-center text-gray-400 hover:text-white border border-white/10 rounded-full transition-colors ${esProblema ? 'opacity-30 pointer-events-none' : ''}"><i class="fa-solid fa-minus text-[9px]"></i></button>
                             <span class="text-white text-sm font-bold w-4 text-center">${p.cantidad}</span>
-                            <button onclick="cambiarCantidad('${p._key || p.id}', 1)" class="w-6 h-6 flex items-center justify-center text-gray-400 hover:text-white border border-white/10 rounded-full transition-colors ${esSinStock ? 'opacity-30 pointer-events-none' : ''}"><i class="fa-solid fa-plus text-[9px]"></i></button>
+                            <button onclick="cambiarCantidad('${p._key || p.id}', 1)" class="w-6 h-6 flex items-center justify-center text-gray-400 hover:text-white border border-white/10 rounded-full transition-colors ${esProblema ? 'opacity-30 pointer-events-none' : ''}"><i class="fa-solid fa-plus text-[9px]"></i></button>
                         </div>
                     </div>
-                    <button onclick="eliminarDelCarrito('${p._key || p.id}')" class="flex-shrink-0 w-7 h-7 flex items-center justify-center ${esSinStock ? 'text-red-500 bg-red-500/15 hover:bg-red-500 hover:text-white' : 'text-gray-600 hover:text-red-400 hover:bg-red-400/10'} rounded-full transition-all">
+                    <button onclick="eliminarDelCarrito('${p._key || p.id}')" class="flex-shrink-0 w-7 h-7 flex items-center justify-center ${trashClass} rounded-full transition-all">
                         <i class="fa-solid fa-trash-can text-xs"></i>
                     </button>
                 </div>
@@ -472,7 +516,7 @@ window.abrirCarrito = function() {
     document.getElementById("total-carrito").innerText = `$ ${total.toLocaleString('es-AR')}`;
 
     const btnEnviar = document.getElementById("btn-enviar-pedido");
-    const hayBloqueantes2 = carrito.some(p => p.disponible === false);
+    const hayBloqueantes2 = carrito.some(p => p.disponible === false || p._eliminado === true);
     if (btnEnviar) {
         if (hayBloqueantes2) {
             btnEnviar.disabled = true;
@@ -502,13 +546,13 @@ window.abrirLightbox = function(index) {
     lightboxIndex = index;
     const lb = document.getElementById('lightbox');
     lb.classList.remove('hidden');
-    document.body.classList.add('modal-active');
+    bloquearScroll();
     renderLightbox();
 };
 
 window.cerrarLightbox = function() {
     document.getElementById('lightbox').classList.add('hidden');
-    document.body.classList.remove('modal-active');
+    desbloquearScroll();
 };
 
 window.lightboxNav = function(dir) {
@@ -560,9 +604,32 @@ function actualizarContador() {
     document.getElementById("cart-count").innerText = count;
 }
 
+// --- BLOQUEO DE SCROLL (compatible iOS) ---
+let _scrollY = 0;
+
+function bloquearScroll() {
+    _scrollY = window.scrollY;
+    document.body.style.position = 'fixed';
+    document.body.style.top = `-${_scrollY}px`;
+    document.body.style.width = '100%';
+    document.body.classList.add('modal-active');
+}
+
+function desbloquearScroll() {
+    document.body.classList.remove('modal-active');
+    document.body.style.position = '';
+    document.body.style.top = '';
+    document.body.style.width = '';
+    window.scrollTo(0, _scrollY);
+}
+
 window.cerrarModal = (id) => {
     document.getElementById(id).classList.add("hidden");
-    document.body.classList.remove("modal-active");
+    // Solo desbloquear si no hay otro modal abierto
+    const modalesAbiertos = ['modal-detalles', 'modal-carrito', 'lightbox']
+        .filter(m => m !== id)
+        .some(m => !document.getElementById(m).classList.contains('hidden'));
+    if (!modalesAbiertos) desbloquearScroll();
 };
 
 window.confirmarEliminar = () => {
@@ -582,7 +649,7 @@ window.cancelarEliminar = () => {
 
 window.enviarWhatsApp = function() {
     if (!carrito.length) return;
-    if (carrito.some(p => p.disponible === false)) {
+    if (carrito.some(p => p.disponible === false || p._eliminado === true)) {
         showToast("Eliminá los productos sin stock para continuar");
         return;
     }
