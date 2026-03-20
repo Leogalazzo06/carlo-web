@@ -51,7 +51,6 @@ async function cargarProductos() {
     try {
         const querySnapshot = await getDocs(collection(db, "products"));
         productos = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        productosFiltrados = [...productos];
 
         // Sincronizar carrito contra stock real de Firebase
         let huboSinStockNuevo = false;
@@ -65,14 +64,29 @@ async function cargarProductos() {
                 return { ...item, _eliminado: true };
             }
 
-            const eraDisponible   = item.disponible !== false;
-            const ahoraDisponible = fresh.disponible !== false;
+            // Detectar si es variante y buscar su stock actualizado
+            const esVariante = item._key && item._key.includes('__');
+            let ahoraDisponible = fresh.disponible !== false;
+
+            if (esVariante) {
+                // Extraer nombre de variante del key (formato: "prodId__nombreVariante")
+                const nombreVariante = item._key.slice(item._key.indexOf('__') + 2);
+                const varianteFresh  = (fresh.variantes || []).find(v => v.nombre === nombreVariante);
+                if (varianteFresh) {
+                    // Stock de la variante específica manda
+                    ahoraDisponible = varianteFresh.disponible !== false;
+                } else {
+                    // Variante ya no existe en el producto → marcar como eliminada
+                    if (!item._eliminado) huboEliminado = true;
+                    return { ...item, _eliminado: true };
+                }
+            }
+
+            const eraDisponible = item.disponible !== false;
             if (eraDisponible && !ahoraDisponible) huboSinStockNuevo = true;
 
             // Calcular precio actualizado (con oferta si aplica)
             const enOferta   = fresh.enOferta === true && fresh.precioOferta > 0 && fresh.precioOferta < fresh.precio;
-            // Solo recalcular si el item NO es una variante (variantes tienen precio propio)
-            const esVariante = item._key && item._key.includes('__');
             let precioActual = item.precio;
             if (!esVariante) {
                 precioActual = enOferta ? fresh.precioOferta : fresh.precio;
@@ -82,7 +96,7 @@ async function cargarProductos() {
             return {
                 ...item,
                 _eliminado:   false,
-                disponible:   fresh.disponible,
+                disponible:   ahoraDisponible,
                 precio:       precioActual,
                 enOferta:     fresh.enOferta,
                 precioOferta: fresh.precioOferta
@@ -94,7 +108,7 @@ async function cargarProductos() {
         if (huboSinStockNuevo) showToast("Hay productos en tu carrito que ya no tienen stock");
         if (huboCambioPrecio)  showToast("El precio de un producto en tu carrito fue actualizado");
 
-        renderProductos();
+        aplicarFiltros();
         actualizarContador();
     } catch (e) {
         console.error("Error Carlo Xavi DB:", e);
@@ -184,6 +198,25 @@ function aplicarFiltros() {
             || (categoriaActual === "Ofertas" ? p.enOferta === true : p.categoria === categoriaActual);
         return matchText && matchCat;
     });
+
+    // Ordenar:
+    //  1) Badge "Nuevo" con stock → primero, por fechaCreacion desc
+    //  2) Con stock sin badge     → por fechaCreacion desc (editar no mueve al tope)
+    //  3) Sin stock               → al final, por fechaCreacion desc
+    productosFiltrados.sort((a, b) => {
+        const grupo = p => {
+            if (p.disponible === false) return 2;
+            if (p.esNuevo === true)     return 0;
+            return 1;
+        };
+        const ga = grupo(a), gb = grupo(b);
+        if (ga !== gb) return ga - gb;
+        // Dentro del mismo grupo: fecha de creación (no de edición)
+        const fa = a.fechaCreacion || a.fecha || 0;
+        const fb = b.fechaCreacion || b.fecha || 0;
+        return fb - fa;
+    });
+
     renderProductos();
 }
 
