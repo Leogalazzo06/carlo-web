@@ -283,29 +283,100 @@
         }
     </script>
 
-    <section class="py-12 border-b border-white/5">
+    <section class="pt-10 pb-8 border-b border-white/5">
         <div class="container mx-auto px-4">
-            <div class="flex flex-col md:flex-row gap-8 items-center justify-between">
-                <div class="flex items-center gap-4 overflow-x-auto no-scrollbar w-full md:w-auto pb-4 md:pb-0" id="categorias-container">
-                    <button onclick="filtrarCategoria('Todos')" class="cat-btn active px-6 py-2 rounded-full text-xs font-bold uppercase tracking-widest border border-white/10 bg-white/5 hover:border-[#d4af37] transition-all whitespace-nowrap">Todos</button>
-                    <button onclick="filtrarCategoria('Relojes')" class="cat-btn px-6 py-2 rounded-full text-xs font-bold uppercase tracking-widest border border-white/10 hover:border-[#d4af37] transition-all whitespace-nowrap">Relojes</button>
-                    <button onclick="filtrarCategoria('Pulseras')" class="cat-btn px-6 py-2 rounded-full text-xs font-bold uppercase tracking-widest border border-white/10 hover:border-[#d4af37] transition-all whitespace-nowrap">Pulseras</button>
-                    <button onclick="filtrarCategoria('Cadenas')" class="cat-btn px-6 py-2 rounded-full text-xs font-bold uppercase tracking-widest border border-white/10 hover:border-[#d4af37] transition-all whitespace-nowrap">Cadenas</button>
-                    <button onclick="filtrarCategoria('Llaveros')" class="cat-btn px-6 py-2 rounded-full text-xs font-bold uppercase tracking-widest border border-white/10 hover:border-[#d4af37] transition-all whitespace-nowrap">Llaveros</button>
-                    <button onclick="filtrarCategoria('Perfumeros')" class="cat-btn px-6 py-2 rounded-full text-xs font-bold uppercase tracking-widest border border-white/10 hover:border-[#d4af37] transition-all whitespace-nowrap">Perfumeros</button>
-                    <button onclick="filtrarCategoria('Aros')" class="cat-btn px-6 py-2 rounded-full text-xs font-bold uppercase tracking-widest border border-white/10 hover:border-[#d4af37] transition-all whitespace-nowrap">Aros</button>
-                    <button onclick="filtrarCategoria('Billeteras')" class="cat-btn px-6 py-2 rounded-full text-xs font-bold uppercase tracking-widest border border-white/10 hover:border-[#d4af37] transition-all whitespace-nowrap">Billeteras</button>
-                    <button onclick="filtrarCategoria('Ofertas')" class="cat-btn px-6 py-2 rounded-full text-xs font-bold uppercase tracking-widest border border-[#d4af37]/40 text-[#d4af37] hover:bg-[#d4af37] hover:text-black transition-all whitespace-nowrap">🏷 Ofertas</button>
-                </div>
 
-                <div class="relative w-full md:w-96">
-                    <input type="text" id="buscador-principal" placeholder="Buscar accesorio" 
-                           class="w-full bg-transparent border-b-2 border-white/10 py-3 px-4 focus:border-[#d4af37] outline-none transition-all font-light text-lg">
-                    <i class="fa-solid fa-magnifying-glass absolute right-4 top-1/2 -translate-y-1/2 text-gray-500"></i>
+            <!-- Fila 1: Categorías con flechas -->
+            <div class="relative flex items-center w-full" id="cat-wrapper">
+                <!-- Flecha izquierda -->
+                <button id="cat-prev" onclick="scrollCats(-1)" aria-label="Anterior"
+                    class="hidden md:flex absolute left-0 z-10 w-8 h-8 items-center justify-center rounded-full bg-[#0a0a0a] border border-white/10 text-gray-400 hover:border-[#d4af37] hover:text-[#d4af37] transition-all flex-shrink-0 opacity-0 pointer-events-none"
+                    style="box-shadow:10px 0 20px 8px #050505;">
+                    <i class="fa-solid fa-chevron-left text-[10px]"></i>
+                </button>
+                <!-- Scroll container -->
+                <div class="flex items-center justify-center gap-3 overflow-x-auto no-scrollbar w-full pb-2 md:pb-0 md:px-10" id="categorias-container">
+                    <button onclick="filtrarCategoria('Todos')" class="cat-btn active px-5 py-2 rounded-full text-xs font-bold uppercase tracking-widest border border-white/10 bg-white/5 hover:border-[#d4af37] transition-all whitespace-nowrap">Todos</button>
+                    <button onclick="filtrarCategoria('Relojes')" class="cat-btn px-5 py-2 rounded-full text-xs font-bold uppercase tracking-widest border border-white/10 hover:border-[#d4af37] transition-all whitespace-nowrap">Relojes</button>
+                    <button onclick="filtrarCategoria('Pulseras')" class="cat-btn px-5 py-2 rounded-full text-xs font-bold uppercase tracking-widest border border-white/10 hover:border-[#d4af37] transition-all whitespace-nowrap">Pulseras</button>
+                    <button onclick="filtrarCategoria('Cadenas')" class="cat-btn px-5 py-2 rounded-full text-xs font-bold uppercase tracking-widest border border-white/10 hover:border-[#d4af37] transition-all whitespace-nowrap">Cadenas</button>
+                    <button onclick="filtrarCategoria('Llaveros')" class="cat-btn px-5 py-2 rounded-full text-xs font-bold uppercase tracking-widest border border-white/10 hover:border-[#d4af37] transition-all whitespace-nowrap">Llaveros</button>
+                    <button onclick="filtrarCategoria('Perfumes')" class="cat-btn px-5 py-2 rounded-full text-xs font-bold uppercase tracking-widest border border-white/10 hover:border-[#d4af37] transition-all whitespace-nowrap">Perfumes</button>
+                    <button onclick="filtrarCategoria('Aros')" class="cat-btn px-5 py-2 rounded-full text-xs font-bold uppercase tracking-widest border border-white/10 hover:border-[#d4af37] transition-all whitespace-nowrap">Aros</button>
+                    <button onclick="filtrarCategoria('Billeteras')" class="cat-btn px-5 py-2 rounded-full text-xs font-bold uppercase tracking-widest border border-white/10 hover:border-[#d4af37] transition-all whitespace-nowrap">Billeteras</button>
+                    <button onclick="filtrarCategoria('Ofertas')" class="cat-btn px-5 py-2 rounded-full text-xs font-bold uppercase tracking-widest border border-[#d4af37]/40 text-[#d4af37] hover:bg-[#d4af37] hover:text-black transition-all whitespace-nowrap">🏷 Ofertas</button>
+                </div>
+                <!-- Flecha derecha -->
+                <button id="cat-next" onclick="scrollCats(1)" aria-label="Siguiente"
+                    class="hidden md:flex absolute right-0 z-10 w-8 h-8 items-center justify-center rounded-full bg-[#0a0a0a] border border-white/10 text-gray-400 hover:border-[#d4af37] hover:text-[#d4af37] transition-all flex-shrink-0"
+                    style="box-shadow:-10px 0 20px 8px #050505;">
+                    <i class="fa-solid fa-chevron-right text-[10px]"></i>
+                </button>
+            </div>
+
+            <!-- Fila 2: Buscador premium centrado -->
+            <div class="mt-6 flex justify-center">
+                <div id="buscador-wrap" class="relative w-full max-w-lg group">
+                    <!-- Icono lupa -->
+                    <div class="absolute left-5 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-[#d4af37] transition-colors duration-300 pointer-events-none">
+                        <i class="fa-solid fa-magnifying-glass text-sm"></i>
+                    </div>
+                    <input
+                        type="text"
+                        id="buscador-principal"
+                        placeholder="Buscar pieza..."
+                        autocomplete="off"
+                        class="w-full bg-white/[0.03] border border-white/10 rounded-2xl py-3.5 pl-12 pr-12 text-sm text-white placeholder-gray-600 outline-none
+                               transition-all duration-300
+                               focus:bg-white/[0.05] focus:border-[#d4af37]/60 focus:shadow-[0_0_0_3px_rgba(212,175,55,0.08),0_8px_32px_rgba(0,0,0,0.4)]"
+                    >
+                    <!-- Botón limpiar -->
+                    <button id="buscador-clear"
+                        onclick="document.getElementById('buscador-principal').value='';document.getElementById('buscador-principal').dispatchEvent(new Event('input'));this.classList.add('opacity-0','pointer-events-none');"
+                        class="absolute right-4 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center rounded-full bg-white/8 text-gray-500 hover:text-white hover:bg-white/15 transition-all opacity-0 pointer-events-none text-xs">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
                 </div>
             </div>
+
         </div>
     </section>
+
+    <script>
+        (function() {
+            const rail  = document.getElementById('categorias-container');
+            const prev  = document.getElementById('cat-prev');
+            const next  = document.getElementById('cat-next');
+            const STEP  = 180;
+
+            function updateArrows() {
+                if (window.innerWidth < 768) return;
+                const atStart = rail.scrollLeft <= 4;
+                const atEnd   = rail.scrollLeft + rail.clientWidth >= rail.scrollWidth - 4;
+                prev.classList.toggle('opacity-0',           atStart);
+                prev.classList.toggle('pointer-events-none', atStart);
+                next.classList.toggle('opacity-0',           atEnd);
+                next.classList.toggle('pointer-events-none', atEnd);
+            }
+
+            window.scrollCats = function(dir) {
+                rail.scrollBy({ left: dir * STEP, behavior: 'smooth' });
+            };
+
+            rail.addEventListener('scroll', updateArrows, { passive: true });
+            window.addEventListener('resize', updateArrows);
+            setTimeout(updateArrows, 100);
+
+            // Mostrar/ocultar botón X del buscador
+            const input  = document.getElementById('buscador-principal');
+            const clearBtn = document.getElementById('buscador-clear');
+            input.addEventListener('input', () => {
+                const hasText = input.value.length > 0;
+                clearBtn.classList.toggle('opacity-0',           !hasText);
+                clearBtn.classList.toggle('pointer-events-none', !hasText);
+            });
+        })();
+    </script>
 
     <main id="productos" class="container mx-auto px-4 py-20">
         <div class="flex flex-col mb-16">
