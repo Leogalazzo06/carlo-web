@@ -134,6 +134,7 @@ function renderProductos() {
                 <div class="aspect-[4/5] overflow-hidden relative">
                     <img src="${p.imagenes[0]}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 ${!disponible ? 'grayscale opacity-40' : ''}" loading="lazy">
                     <div class="absolute top-4 left-4 flex flex-col gap-2">
+                        ${p.esNuevo ? `<span class="bg-white text-black text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-widest shadow-xl">✦ Nuevo</span>` : ''}
                         ${enOferta ? `<span class="bg-[#d4af37] text-black text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-widest shadow-xl">-${pct}% OFF</span>` : ''}
                         ${!disponible ? '<span class="bg-white/10 backdrop-blur-md text-white text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-widest">Sold Out</span>' : ''}
                     </div>
@@ -241,16 +242,18 @@ function renderPrecioVariantes(p, modo) {
                     ? `<span class="line-through text-[9px] opacity-50">$${Number(v.precio).toLocaleString('es-AR')}</span> <span class="text-[#d4af37]">$${Number(v.precioOferta).toLocaleString('es-AR')}</span>`
                     : `$ ${Number(v.precio).toLocaleString('es-AR')}`)
                 : `<span class="text-red-400/70">Sin stock</span>`;
+            const imagenEsc = (v.imagen || '').replace(/'/g, "\\'");
 
             return `
             <button type="button"
-                onclick="seleccionarVariante('${p.id}', '${v.nombre}', ${v.precio}, ${vDisponible}, this, ${vEnOferta ? v.precioOferta : 0})"
+                onclick="seleccionarVariante('${p.id}', '${v.nombre}', ${v.precio}, ${vDisponible}, this, ${vEnOferta ? v.precioOferta : 0}, '${imagenEsc}')"
                 class="variante-btn flex-1 px-3 py-2.5 rounded-xl border text-xs font-bold uppercase tracking-wider transition-all
                     ${i === 0
                         ? (vDisponible ? 'border-[#d4af37] bg-[#d4af37]/10 text-[#d4af37]' : 'border-red-500/50 bg-red-500/10 text-red-400')
                         : (vDisponible ? 'border-white/10 text-gray-400 hover:border-white/30' : 'border-red-500/20 text-red-500/50 hover:border-red-500/40')
                     }"
-                data-nombre="${v.nombre}" data-precio="${v.precio}" data-disponible="${vDisponible}" data-precio-oferta="${vEnOferta ? v.precioOferta : 0}">
+                data-nombre="${v.nombre}" data-precio="${v.precio}" data-disponible="${vDisponible}" data-precio-oferta="${vEnOferta ? v.precioOferta : 0}" data-imagen="${imagenEsc}">
+                ${v.imagen ? `<img src="${v.imagen}" class="w-8 h-8 object-cover rounded-lg mx-auto mb-1 border border-white/10" loading="lazy">` : ''}
                 ${v.nombre}<br>
                 <span class="font-light normal-case tracking-normal text-[10px] flex items-center gap-1 justify-center flex-wrap">${precioLabel}</span>
             </button>`;
@@ -274,6 +277,7 @@ function renderPrecioVariantes(p, modo) {
             <input type="hidden" id="variante-sel-nombre-${p.id}" value="${primeraVariante.nombre}">
             <input type="hidden" id="variante-sel-precio-${p.id}" value="${v0EnOferta ? primeraVariante.precioOferta : primeraVariante.precio}">
             <input type="hidden" id="variante-sel-disponible-${p.id}" value="${primeraDisponible}">
+            <input type="hidden" id="variante-sel-imagen-${p.id}" value="${primeraVariante.imagen || ''}">
             <button id="btn-add-${p.id}" onclick="agregarCarritoConVariante('${p.id}')"
                 class="w-full ${primeraDisponible ? 'bg-[#d4af37] text-black hover:bg-white' : 'bg-white/5 text-gray-500 cursor-not-allowed'} ${btnPy} rounded-full font-black uppercase tracking-widest transition-all shadow-xl ${isMobile ? '' : 'mt-2'}"
                 ${primeraDisponible ? '' : 'disabled'}>
@@ -292,7 +296,7 @@ function renderPrecioVariantes(p, modo) {
         </button>`;
 }
 
-window.seleccionarVariante = function(prodId, nombre, precio, disponible, btnEl, precioOferta = 0) {
+window.seleccionarVariante = function(prodId, nombre, precio, disponible, btnEl, precioOferta = 0, imagenVariante = '') {
     const enOferta = precioOferta > 0 && precioOferta < precio;
     const precioFinal = enOferta ? precioOferta : precio;
 
@@ -317,6 +321,19 @@ window.seleccionarVariante = function(prodId, nombre, precio, disponible, btnEl,
     document.getElementById(`variante-sel-precio-${prodId}`).value = precioFinal;
     const dispInput = document.getElementById(`variante-sel-disponible-${prodId}`);
     if (dispInput) dispInput.value = disponible ? 'true' : 'false';
+
+    // Guardar imagen de variante seleccionada
+    const imgInput = document.getElementById(`variante-sel-imagen-${prodId}`);
+    if (imgInput) imgInput.value = imagenVariante || '';
+
+    // Cambiar imagen principal si la variante tiene foto propia
+    if (imagenVariante) {
+        const mainImg = document.getElementById('main-img');
+        if (mainImg) {
+            mainImg.style.opacity = '0';
+            setTimeout(() => { mainImg.src = imagenVariante; mainImg.style.opacity = '1'; mainImg.style.transition = 'opacity 0.25s ease'; }, 180);
+        }
+    }
 
     // Actualizar botón de carrito
     const btnAdd = document.getElementById(`btn-add-${prodId}`);
@@ -360,12 +377,14 @@ window.agregarCarritoConVariante = function(prodId) {
     const nombre    = document.getElementById(`variante-sel-nombre-${prodId}`)?.value;
     const precio    = document.getElementById(`variante-sel-precio-${prodId}`)?.value;
     const dispInput = document.getElementById(`variante-sel-disponible-${prodId}`);
+    const imgInput  = document.getElementById(`variante-sel-imagen-${prodId}`);
     const disponible = dispInput ? dispInput.value !== 'false' : true;
+    const imagenVariante = imgInput ? imgInput.value : '';
     if (!disponible) {
         showToast("Esta variante no tiene stock");
         return;
     }
-    agregarCarrito(prodId, nombre, precio ? Number(precio) : null);
+    agregarCarrito(prodId, nombre, precio ? Number(precio) : null, imagenVariante);
 };
 
 // --- MODAL DE DETALLES ---
@@ -391,6 +410,7 @@ window.verDetalles = function(id) {
 
     const badges = `
         <div class="absolute top-4 left-4 flex flex-col gap-2">
+            ${p.esNuevo ? `<span class="bg-white text-black text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-widest shadow-xl">✦ Nuevo</span>` : ''}
             ${enOferta ? `<span class="bg-[#d4af37] text-black text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-widest shadow-xl">-${pct}% OFF</span>` : ''}
             ${p.disponible === false ? '<span class="bg-white/10 backdrop-blur-md text-white text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-widest">Sold Out</span>' : ''}
         </div>`;
@@ -467,7 +487,7 @@ window.cambiarImagenDetalle = (src) => {
 };
 
 // --- CARRITO (CARLO-WEB) ---
-window.agregarCarrito = function(id, varianteNombre, variantePrecio) {
+window.agregarCarrito = function(id, varianteNombre, variantePrecio, imagenVariante) {
     const prod = productos.find(p => p.id === id);
     if (!prod || prod.disponible === false) return showToast("Pieza no disponible");
 
@@ -477,11 +497,16 @@ window.agregarCarrito = function(id, varianteNombre, variantePrecio) {
     const nombreFinal   = varianteNombre  ? `${prod.nombre} — ${varianteNombre}` : prod.nombre;
     const carritoKey    = varianteNombre  ? `${id}__${varianteNombre}` : id;
 
+    // Imagen a mostrar en carrito: si variante tiene foto propia úsala, si no la primera del producto
+    const imagenes = (imagenVariante && imagenVariante !== '')
+        ? [imagenVariante, ...prod.imagenes]
+        : prod.imagenes;
+
     const existe = carrito.find(p => p._key === carritoKey);
     if (existe) {
         existe.cantidad++;
     } else {
-        carrito.push({ ...prod, nombre: nombreFinal, precio: precioFinal, _key: carritoKey, cantidad: 1 });
+        carrito.push({ ...prod, imagenes, nombre: nombreFinal, precio: precioFinal, _key: carritoKey, cantidad: 1 });
     }
 
     guardarCarrito();
