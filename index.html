@@ -87,6 +87,10 @@
         body.modal-active {
             overflow: hidden;
         }
+        /* Evita el salto de scroll al abrir/cerrar modales */
+        body.modal-active:not(.no-scroll-compensate) {
+            padding-right: var(--scrollbar-width, 0px);
+        }
 
         @keyframes fadeInScale {
             from { opacity: 0; transform: scale(0.92); }
