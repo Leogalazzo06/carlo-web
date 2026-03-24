@@ -752,23 +752,13 @@ function actualizarContador() {
     document.getElementById("cart-count").innerText = count;
 }
 
-// --- BLOQUEO DE SCROLL (compatible iOS) ---
-let _scrollY = 0;
-
+// --- BLOQUEO DE SCROLL ---
 function bloquearScroll() {
-    _scrollY = window.scrollY;
-    document.body.style.position = 'fixed';
-    document.body.style.top = `-${_scrollY}px`;
-    document.body.style.width = '100%';
     document.body.classList.add('modal-active');
 }
 
 function desbloquearScroll() {
     document.body.classList.remove('modal-active');
-    document.body.style.position = '';
-    document.body.style.top = '';
-    document.body.style.width = '';
-    window.scrollTo(0, _scrollY);
 }
 
 window.cerrarModal = (id) => {
